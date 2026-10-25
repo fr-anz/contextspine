@@ -183,6 +183,11 @@ secrets out of them too.
 `checkpoint`, `preference`, `drift`. The full source lives in
 [prompts.md](prompts.md).
 
+## Acknowledgements
+
+Thanks to my mentor, **Carlos Jerico Dela Torre**, for helping and guiding me in
+creating the idea-to-build pipeline.
+
 ## License
 
 [MIT](LICENSE). Source and issues: https://github.com/fr-anz/contextspine
