@@ -185,25 +185,131 @@ secrets out of them too.
 
 ## Recommended skills
 
-contextspine works well alongside these agent skills. Each is maintained by its
-author. Install it with the [skills CLI](https://github.com/vercel-labs/skills) or
-follow the instructions in its repository.
+contextspine decides *what* to build and keeps every session on track. Skills
+teach the agent *how* to do one kind of work well. These five fit the pipeline
+stages. Each is maintained by its author; contextspine does not bundle them.
 
-| Skill | Use it for | Source |
-| --- | --- | --- |
-| [grill-me](https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md) | Stress-testing the idea and chosen solution during idea intake | [mattpocock/skills](https://github.com/mattpocock/skills) |
-| [tdd](https://github.com/mattpocock/skills/blob/main/skills/engineering/tdd/SKILL.md) | Building each `BUILD.md` milestone test-first against the `QAD.md` cases | [mattpocock/skills](https://github.com/mattpocock/skills) |
-| [diagnosing-bugs](https://github.com/mattpocock/skills/blob/main/skills/engineering/diagnosing-bugs/SKILL.md) | A disciplined loop for hard bugs and performance regressions | [mattpocock/skills](https://github.com/mattpocock/skills) |
-| [better-ui](https://github.com/23jmo/jmo-skills/tree/main/skills/better-ui) | Polishing surfaces, icons, and motion to match `DSD.md` (by [Jakub Krehel](https://github.com/jakubkrehel/skills/tree/main/skills/better-ui)) | [23jmo/jmo-skills](https://github.com/23jmo/jmo-skills) |
-| [ste](https://github.com/23jmo/jmo-skills/tree/main/skills/ste) | Writing the pipeline documents in clear, precise technical English | [23jmo/jmo-skills](https://github.com/23jmo/jmo-skills) |
+Install them with the [skills CLI](https://github.com/vercel-labs/skills) (or
+follow each repository's own instructions), then restart your agent:
 
 ```bash
 npx skills@latest add mattpocock/skills --skill grill-me
+npx skills@latest add mattpocock/skills --skill grilling
 npx skills@latest add mattpocock/skills --skill tdd
 npx skills@latest add mattpocock/skills --skill diagnosing-bugs
 npx skills@latest add 23jmo/jmo-skills --skill better-ui
 npx skills@latest add 23jmo/jmo-skills --skill ste
 ```
+
+| Skill | Pipeline stage | Source |
+| --- | --- | --- |
+| grill-me | Idea intake, before `propagate` | [mattpocock/skills](https://github.com/mattpocock/skills) |
+| tdd | Building each `BUILD.md` milestone | [mattpocock/skills](https://github.com/mattpocock/skills) |
+| diagnosing-bugs | Any time something breaks or slows down | [mattpocock/skills](https://github.com/mattpocock/skills) |
+| better-ui | UI work against `DSD.md` | [23jmo/jmo-skills](https://github.com/23jmo/jmo-skills) |
+| ste | Writing and reviewing the `docs/` documents | [23jmo/jmo-skills](https://github.com/23jmo/jmo-skills) |
+
+### [grill-me](https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md)
+
+A relentless interview that sharpens a plan. The agent maps your decisions as a
+tree, asks every question it can answer now in numbered rounds with its
+recommended answer, looks up facts itself, and stops only when nothing is left
+silently assumed. `grill-me` hands off to the
+[grilling](https://github.com/mattpocock/skills/blob/main/skills/productivity/grilling/SKILL.md)
+skill, so install both.
+
+- **When:** after `prompt idea` records a chosen solution, and before
+  `prompt propagate`. Weak screening verdicts and vague requirements surface
+  here instead of in the PRD.
+- **How:** type `/grill-me` (it runs only when you call it), then for example:
+  "Grill me on the chosen solution in docs/IDEA.md."
+
+### [tdd](https://github.com/mattpocock/skills/blob/main/skills/engineering/tdd/SKILL.md)
+
+Test-driven development as a red-green loop: one failing test, the minimum code
+to pass it, repeat. Tests check behavior through public interfaces, and the
+agent agrees the test seams with you before writing any test.
+
+- **When:** building a milestone. The `QAD.md` cases (`T#`) named in the
+  milestone's exit criteria become the tests to write first.
+- **How:** "Use tdd to build M1 from docs/BUILD.md. Start with T1."
+
+### [diagnosing-bugs](https://github.com/mattpocock/skills/blob/main/skills/engineering/diagnosing-bugs/SKILL.md)
+
+A disciplined loop for hard bugs and performance regressions. The agent first
+builds a tight pass/fail signal (a failing test, script, or replay), then
+narrows the cause, fixes it, and keeps the signal as a regression test. It
+redacts secrets from anything it shows.
+
+- **When:** a milestone test fails for no obvious reason, something works
+  locally but not in production, or a page gets slow.
+- **How:** "Diagnose this: <symptom>." Record the root cause in
+  `.context/knowledge.md` so later sessions don't rediscover it.
+
+### [better-ui](https://github.com/23jmo/jmo-skills/tree/main/skills/better-ui)
+
+Exact values for interface polish: nested border radii, optical alignment,
+shadows instead of depth borders, image outlines, press feedback, and when not
+to animate. It keeps your existing component library and tokens. Written by
+[Jakub Krehel](https://github.com/jakubkrehel/skills/tree/main/skills/better-ui)
+and packaged in jmo-skills.
+
+- **When:** after a milestone's UI works, as a polish pass against `DSD.md`.
+- **How:** "Use better-ui to polish the dashboard. Keep the DSD.md tokens."
+
+### [ste](https://github.com/23jmo/jmo-skills/tree/main/skills/ste)
+
+Clear technical English: one idea per sentence, defined terms and acronyms,
+active voice, steps in order, and facts kept separate from assumptions.
+
+- **When:** reviewing the pipeline documents before you share them, or when an
+  agent's explanation is hard to follow.
+- **How:** "Use ste to rewrite docs/PRD.md for a new teammate. Keep every R# and
+  acceptance criterion unchanged."
+
+## Sample use case: from idea to first milestone
+
+Maya runs a small tutoring business. Parents keep asking her for weekly progress
+updates, and she writes each one by hand. She wants a web app that turns session
+notes into a parent summary.
+
+1. **Set up the project.**
+   ```bash
+   mkdir tutor-notes && cd tutor-notes && git init
+   npx contextspine init
+   npx contextspine idea
+   ```
+2. **Screen the problem.** She runs `npx contextspine prompt idea` and pastes
+   the printed prompt into her agent. The interview scores the five tests. *Real* and *Significant* pass:
+   she spends about four hours a week on updates. *Large enough* is weak, so the
+   agent records it as an open question for research. She picks "notes in,
+   summary out" over a full tutoring platform.
+3. **Stress-test it.** `/grill-me` asks whether parents need a login, what
+   happens to notes about minors, and whether summaries go out automatically.
+   Her answers land in `docs/IDEA.md`; the minors question becomes a privacy
+   requirement.
+4. **Research.** She sends the `research-brief` prompt, pastes the brief the
+   agent writes into ChatGPT deep research, pastes the answer into
+   `docs/RESEARCH.md`, and sends `research-import`. Two competitors exist but target large schools, and the
+   *Large enough* verdict now has a source.
+5. **Write the build documents.** The `propagate` prompt writes
+   `PRD.md` (for example, R3: "a parent receives one summary per week"),
+   `DSD.md`, `SDD.md`, `QAD.md` (T5 verifies R3), and `BUILD.md` with M1 as the
+   smallest end-to-end slice: paste notes, generate one summary, email it.
+   `npx contextspine check` confirms every requirement has a test. She asks the
+   agent to use **ste** on `PRD.md` before sharing it with a tutor friend.
+6. **Build M1.** "Use tdd to build M1 from docs/BUILD.md." The agent writes T1
+   first, makes it pass, and moves through the milestone's tests.
+   `.context/state.md` records "M1 in progress, T1–T3 passing".
+7. **Fix a bug.** The summary email sends twice. "Diagnose this: weekly email
+   sends twice." The agent reproduces it with a failing test, finds a retry
+   that ignores the first success, fixes it, and records the cause in
+   `.context/knowledge.md`.
+8. **Polish.** "Use better-ui to polish the summary page. Keep the DSD.md
+   tokens."
+9. **Next day, different tool.** She opens the folder in another agent and
+   sends the `resume` prompt. It reports "M1 done; next M2, the
+   parent login" and continues from there.
 
 ## Acknowledgements
 
