@@ -183,6 +183,28 @@ secrets out of them too.
 `checkpoint`, `preference`, `drift`. The full source lives in
 [prompts.md](prompts.md).
 
+## Recommended skills
+
+contextspine works well alongside these agent skills. Each is maintained by its
+author. Install it with the [skills CLI](https://github.com/vercel-labs/skills) or
+follow the instructions in its repository.
+
+| Skill | Use it for | Source |
+| --- | --- | --- |
+| [grill-me](https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md) | Stress-testing the idea and chosen solution during idea intake | [mattpocock/skills](https://github.com/mattpocock/skills) |
+| [tdd](https://github.com/mattpocock/skills/blob/main/skills/engineering/tdd/SKILL.md) | Building each `BUILD.md` milestone test-first against the `QAD.md` cases | [mattpocock/skills](https://github.com/mattpocock/skills) |
+| [diagnosing-bugs](https://github.com/mattpocock/skills/blob/main/skills/engineering/diagnosing-bugs/SKILL.md) | A disciplined loop for hard bugs and performance regressions | [mattpocock/skills](https://github.com/mattpocock/skills) |
+| [better-ui](https://github.com/23jmo/jmo-skills/tree/main/skills/better-ui) | Polishing surfaces, icons, and motion to match `DSD.md` (by [Jakub Krehel](https://github.com/jakubkrehel/skills/tree/main/skills/better-ui)) | [23jmo/jmo-skills](https://github.com/23jmo/jmo-skills) |
+| [ste](https://github.com/23jmo/jmo-skills/tree/main/skills/ste) | Writing the pipeline documents in clear, precise technical English | [23jmo/jmo-skills](https://github.com/23jmo/jmo-skills) |
+
+```bash
+npx skills@latest add mattpocock/skills --skill grill-me
+npx skills@latest add mattpocock/skills --skill tdd
+npx skills@latest add mattpocock/skills --skill diagnosing-bugs
+npx skills@latest add 23jmo/jmo-skills --skill better-ui
+npx skills@latest add 23jmo/jmo-skills --skill ste
+```
+
 ## Acknowledgements
 
 Thanks to my mentor, **Carlos Jerico Dela Torre**, for helping and guiding me in
