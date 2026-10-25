@@ -1,0 +1,35 @@
+{
+  "name": "contextspine",
+  "version": "0.1.0",
+  "description": "Persistent context and an idea-to-build pipeline for AI coding agents (Codex, Claude Code, Cursor, Copilot, Pi, Kiro).",
+  "license": "MIT",
+  "author": "fr-anz",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fr-anz/contextspine.git"
+  },
+  "homepage": "https://github.com/fr-anz/contextspine#readme",
+  "bugs": {
+    "url": "https://github.com/fr-anz/contextspine/issues"
+  },
+  "type": "module",
+  "bin": {
+    "contextspine": "bin/contextspine.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "bin/contextspine.js",
+    "src/",
+    "templates/project/",
+    "templates/pipeline/",
+    "templates/profile.md",
+    "prompts.md",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  },
+  "keywords": ["ai", "agents", "context", "codex", "claude", "cursor", "prd", "cli"]
+}

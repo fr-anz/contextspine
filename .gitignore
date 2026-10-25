@@ -1,0 +1,20 @@
+/.context/
+
+
+/AGENTS.override.md
+
+
+/CLAUDE.local.md
+
+# Personal working files, kept out of the public repository
+/AGENTS.md
+/CLAUDE.md
+/.cursor/
+/.github/copilot-instructions.md
+/evaluations/
+/profile.md
+/docs/validation.md
+/docs/anthropic-comparison.md
+
+node_modules/
+*.tgz
