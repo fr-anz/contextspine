@@ -21,7 +21,7 @@ initializer rejects mixing modes and `npx contextspine check` reports it. Claude
 follows `@AGENTS.md` imports; the checker warns when both files carry the section.
 
 Each adapter embeds the rules from `.context/rules.md` in a generated
-`workflow:v2` section, so they load with the tool's instruction file.
+`context-spine` section, so they load with the tool's instruction file.
 `npx contextspine init --sync` regenerates that section; customized text outside
 the markers is preserved. This is
 instruction-based enforcement; actual adherence still depends on the agent.

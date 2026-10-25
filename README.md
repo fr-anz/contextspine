@@ -37,7 +37,7 @@ Install once globally to drop `npx`: `npm i -g contextspine`, then `contextspine
 
 ## How a session works
 
-`init` writes a small `workflow:v2` section into each selected agent's
+`init` writes a small `context-spine` section into each selected agent's
 instruction file. That section contains your project rules and the startup
 routine: the agent reads `.context/project.md`, `.context/preferences.md`, and
 `.context/state.md` once per session, opens other files only when the "When to

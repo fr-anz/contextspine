@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-    CURSOR_ADAPTER, CURSOR_FRONTMATTER, END_MARKER, MARKER, V1_MARKER,
-    getAdapterPaths, getModeConflict, getRulesBody, isV1Adapter, isV2Adapter,
+    CURSOR_ADAPTER, CURSOR_FRONTMATTER, END_MARKER, LEGACY_END_MARKER, LEGACY_MARKER, MARKER, V1_MARKER,
+    getAdapterPaths, getModeConflict, getRulesBody, isAnyAdapter, isContextSpineAdapter, isLegacyV2Adapter, isV1Adapter,
     kitRoot, newWorkflowBlock,
 } from './adapters.js';
 import { detectNewline, findMarkedBlock, hasMarkerLine, readTextFile, writeTextFile } from './text.js';
@@ -67,10 +67,10 @@ export function initProject({ projectPath = process.cwd(), projectName, tools = 
     for (const relativePath of adapterPaths) {
         const filePath = path.join(projectRoot, relativePath);
         if (!fs.existsSync(filePath)) continue;
-        if (isV1Adapter(filePath) && !isV2Adapter(filePath)) {
+        if (isV1Adapter(filePath) && !isAnyAdapter(filePath)) {
             throw new Error(`${relativePath} uses the older v1 workflow format. Remove its v1 sections, then rerun. No files changed.`);
         }
-        if (relativePath === CURSOR_ADAPTER && !isV2Adapter(filePath)) {
+        if (relativePath === CURSOR_ADAPTER && !isAnyAdapter(filePath)) {
             throw new Error(`Existing Cursor rule has no context marker. Preserved ${filePath}; merge the router into an always-applied rule manually.`);
         }
     }
@@ -131,6 +131,7 @@ export function initProject({ projectPath = process.cwd(), projectName, tools = 
         const newline = detectNewline(file.content);
         const localBlock = block.replace(/\n/g, newline);
         const current = findMarkedBlock(file.content, MARKER, END_MARKER);
+        const legacy = findMarkedBlock(file.content, LEGACY_MARKER, LEGACY_END_MARKER);
         if (current) {
             if (!sync || current[0] === localBlock) {
                 out(`Kept ${filePath}`);
@@ -139,6 +140,14 @@ export function initProject({ projectPath = process.cwd(), projectName, tools = 
             const updated = file.content.slice(0, current.index) + localBlock + file.content.slice(current.index + current[0].length);
             writeTextFile(filePath, updated, file.encoding);
             out(`Synced ${filePath}`);
+        } else if (legacy) {
+            if (!sync) {
+                out(`Kept ${filePath} (older workflow:v2 marker; rerun with --sync to update)`);
+                continue;
+            }
+            const updated = file.content.slice(0, legacy.index) + localBlock + file.content.slice(legacy.index + legacy[0].length);
+            writeTextFile(filePath, updated, file.encoding);
+            out(`Updated ${filePath} to the context-spine marker`);
         } else {
             addInstructionSection(filePath, block, MARKER);
         }

@@ -5,8 +5,10 @@ import { hasMarkerLine, readTextFile } from './text.js';
 
 export const kitRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-export const MARKER = '<!-- workflow:v2 -->';
-export const END_MARKER = '<!-- /workflow:v2 -->';
+export const MARKER = '<!-- context-spine -->';
+export const END_MARKER = '<!-- /context-spine -->';
+export const LEGACY_MARKER = '<!-- workflow:v2 -->';
+export const LEGACY_END_MARKER = '<!-- /workflow:v2 -->';
 export const V1_MARKER = '<!-- persistent-context:v1 -->';
 export const V1_END_MARKER = '<!-- /persistent-context:v1 -->';
 export const V1_RULES_MARKER = '<!-- agent-run-rules:v1 -->';
@@ -29,9 +31,18 @@ export function getAdapterPaths(tools, shared) {
     return [...new Set(paths)];
 }
 
-export function isV2Adapter(filePath) {
+export function isContextSpineAdapter(filePath) {
     if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) return false;
     return hasMarkerLine(readTextFile(filePath).content, MARKER);
+}
+
+export function isLegacyV2Adapter(filePath) {
+    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) return false;
+    return hasMarkerLine(readTextFile(filePath).content, LEGACY_MARKER);
+}
+
+export function isAnyAdapter(filePath) {
+    return isContextSpineAdapter(filePath) || isLegacyV2Adapter(filePath);
 }
 
 export function isV1Adapter(filePath) {
@@ -43,8 +54,8 @@ export function isV1Adapter(filePath) {
 export function getModeConflict(projectRoot) {
     const at = (rel) => path.join(projectRoot, rel);
     return {
-        private: PRIVATE_ADAPTERS.filter((rel) => isV2Adapter(at(rel)) || isV1Adapter(at(rel))),
-        shared: SHARED_ADAPTERS.filter((rel) => isV2Adapter(at(rel)) || isV1Adapter(at(rel))),
+        private: PRIVATE_ADAPTERS.filter((rel) => isAnyAdapter(at(rel)) || isV1Adapter(at(rel))),
+        shared: SHARED_ADAPTERS.filter((rel) => isAnyAdapter(at(rel)) || isV1Adapter(at(rel))),
     };
 }
 

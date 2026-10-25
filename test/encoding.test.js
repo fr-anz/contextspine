@@ -31,9 +31,9 @@ for (const encoding of ['utf8', 'utf8-bom', 'utf16le', 'utf16be']) {
             const afterBytes = fs.readFileSync(instructionPath);
             assert.deepEqual(afterBytes.subarray(0, beforeBytes.length), beforeBytes, `Original bytes changed: ${encoding}`);
             const after = readTextFile(instructionPath).content;
-            assert.ok(after.includes('<!-- workflow:v2 -->'), `Unreadable router: ${encoding}`);
+            assert.ok(after.includes('<!-- context-spine -->'), `Unreadable router: ${encoding}`);
             assert.equal(fs.readFileSync(path.join(project, '.context/state.md'), 'utf8'), savedState, 'Saved state overwritten.');
-            assert.equal((after.match(/<!-- workflow:v2 -->/g) || []).length, 1, 'Pi/Codex duplicated router.');
+            assert.equal((after.match(/<!-- context-spine -->/g) || []).length, 1, 'Pi/Codex duplicated router.');
             assert.ok(fs.existsSync(path.join(project, 'CLAUDE.md')), 'claude-kiro adapter absent.');
             assert.ok(!fs.existsSync(path.join(project, '.cursor')), 'Unexpected default adapter.');
 

@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-    ALL_ADAPTERS, END_MARKER, MARKER,
-    getModeConflict, getRulesBody, isV1Adapter, isV2Adapter, newWorkflowBlock,
+    ALL_ADAPTERS, END_MARKER, LEGACY_END_MARKER, LEGACY_MARKER, MARKER,
+    getModeConflict, getRulesBody, isAnyAdapter, isContextSpineAdapter, isV1Adapter, newWorkflowBlock,
 } from './adapters.js';
 import { findMarkedBlock, hasMarkerLine, normalizeText, readTextFile, wordCount } from './text.js';
 
@@ -56,11 +56,17 @@ export function checkProject({ projectPath = process.cwd(), docsPath = 'docs' } 
     for (const relativePath of ALL_ADAPTERS) {
         const filePath = path.join(projectRoot, relativePath);
         if (!fs.existsSync(filePath)) continue;
-        if (isV1Adapter(filePath) && !isV2Adapter(filePath)) {
+        if (isV1Adapter(filePath) && !isAnyAdapter(filePath)) {
             add('WARN', `${relativePath} uses the older v1 workflow format; remove its v1 sections, then run \`npx contextspine init --sync\`.`);
             continue;
         }
-        if (!isV2Adapter(filePath)) continue;
+        if (!isContextSpineAdapter(filePath)) {
+            if (hasMarkerLine(readTextFile(filePath).content, LEGACY_MARKER)) {
+                initialized.push(relativePath);
+                add('WARN', `${relativePath} uses the older workflow:v2 marker. ${SYNC_HINT}`);
+            }
+            continue;
+        }
         initialized.push(relativePath);
         const text = readTextFile(filePath).content;
         const block = findMarkedBlock(text, MARKER, END_MARKER);
@@ -81,7 +87,7 @@ export function checkProject({ projectPath = process.cwd(), docsPath = 'docs' } 
         add('WARN', `Mixed modes: private (${modes.private.join(', ')}) and shared (${modes.shared.join(', ')}). Claude Code loads CLAUDE.md and CLAUDE.local.md together; keep one mode.`);
     }
     const claudePath = path.join(projectRoot, 'CLAUDE.md');
-    if (isV2Adapter(claudePath) && isV2Adapter(path.join(projectRoot, 'AGENTS.md')) &&
+    if (isAnyAdapter(claudePath) && isAnyAdapter(path.join(projectRoot, 'AGENTS.md')) &&
         /^\s*@AGENTS\.md\s*$/m.test(readTextFile(claudePath).content)) {
         add('WARN', 'CLAUDE.md imports AGENTS.md and both carry the workflow section, so Claude Code loads it twice. Keep the section in one of them.');
     }

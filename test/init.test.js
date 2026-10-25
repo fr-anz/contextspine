@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-    MARKER, getAdapterPaths, getRulesBody, newWorkflowBlock,
+    LEGACY_END_MARKER, LEGACY_MARKER, MARKER,
+    getAdapterPaths, getRulesBody, newWorkflowBlock,
 } from '../src/adapters.js';
 import { initProject } from '../src/init.js';
 import { checkProject } from '../src/check.js';
@@ -164,6 +165,60 @@ test('customized rules are preserved and embedded; unknown tool rejected', () =>
         assert.ok(readFile(project, '.context/rules.md').includes('Preserve this project-specific rule.'), 'Custom rules replaced.');
         assert.ok(readFile(project, 'AGENTS.override.md').includes('Preserve this project-specific rule.'), 'Custom rules not embedded.');
         assert.throws(() => initProject({ projectPath: project, tools: ['bogus'] }), /Unknown tool 'bogus'/);
+    } finally {
+        fs.rmSync(root, { recursive: true, force: true });
+    }
+});
+
+test('legacy workflow:v2 block: plain init keeps bytes, --sync replaces once preserving BOM/CRLF/surrounding text', () => {
+    const root = fixtureRoot('frnzkit-legacy');
+    try {
+        const project = path.join(root, 'Legacy');
+        fs.mkdirSync(project, { recursive: true });
+        capture(() => initProject({ projectPath: project, tools: ['pi'] }));
+        // Rebuild the adapter as a legacy-marked file with surrounding user text.
+        const generated = readFile(project, 'AGENTS.override.md');
+        const legacyBlock = generated
+            .replaceAll('<!-- context-spine -->', LEGACY_MARKER)
+            .replaceAll('<!-- /context-spine -->', LEGACY_END_MARKER);
+        writeFile(project, 'AGENTS.override.md', `# Team rules\r\nKeep this.\r\n\r\n${legacyBlock.replace(/\n/g, '\r\n')}\r\n\r\nTrailer text.\r\n`, 'utf8-bom');
+        const before = snapshot(project);
+        capture(() => initProject({ projectPath: project, tools: ['pi'] }));
+        assertUnchanged(project, before, 'Plain rerun on legacy marker');
+        capture(() => initProject({ projectPath: project, tools: ['pi'], sync: true }));
+        const bytes = fs.readFileSync(path.join(project, 'AGENTS.override.md'));
+        assert.deepEqual([...bytes.subarray(0, 3)], [0xef, 0xbb, 0xbf], 'Sync dropped the BOM.');
+        const text = bytes.subarray(3).toString('utf8');
+        assert.ok(!text.includes('workflow:v2'), 'Legacy marker remains.');
+        assert.equal(countMarker(text, MARKER), 1, 'New marker not written once.');
+        assert.ok(text.startsWith('# Team rules\r\nKeep this.\r\n'), 'Surrounding text before the block changed.');
+        assert.ok(text.endsWith('Trailer text.\r\n'), 'Trailer text changed.');
+        const check = invokeCheck(project);
+        assert.ok(check.text.includes('Result: PASS'), `Post-sync check: ${check.text}`);
+    } finally {
+        fs.rmSync(root, { recursive: true, force: true });
+    }
+});
+
+test('check on a legacy workflow:v2 adapter warns without failing; legacy shared adapter blocks private init', () => {
+    const root = fixtureRoot('frnzkit-legacy-check');
+    try {
+        const project = path.join(root, 'LegacyWarn');
+        fs.mkdirSync(project, { recursive: true });
+        capture(() => initProject({ projectPath: project, tools: ['pi'] }));
+        const adapter = readFile(project, 'AGENTS.override.md');
+        writeFile(project, 'AGENTS.override.md', adapter
+            .replaceAll('<!-- context-spine -->', LEGACY_MARKER)
+            .replaceAll('<!-- /context-spine -->', LEGACY_END_MARKER));
+        const check = invokeCheck(project);
+        assert.equal(check.code, 0, `Legacy check exit: ${check.text}`);
+        assert.ok(check.text.includes('uses the older workflow:v2 marker'), 'Missing legacy warning.');
+        assert.ok(!check.text.includes('No initialized adapter'), 'Legacy adapter not counted initialized.');
+
+        const conflict = path.join(root, 'Conflict');
+        fs.mkdirSync(conflict, { recursive: true });
+        writeFile(conflict, 'CLAUDE.md', `${LEGACY_MARKER}\nold block\n${LEGACY_END_MARKER}\n`);
+        assert.throws(() => initProject({ projectPath: conflict }), /already uses shared workflow adapters/, 'Legacy shared adapter did not block private init.');
     } finally {
         fs.rmSync(root, { recursive: true, force: true });
     }
