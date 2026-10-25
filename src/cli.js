@@ -9,9 +9,10 @@ import { ensureProfile } from './profile.js';
 const HELP = `contextspine — persistent context and an idea-to-build pipeline for AI coding agents
 
 Quick start:
-  1. cd your-project && npx contextspine init
+  0. npm install -g contextspine   (or prefix every command with npx)
+  1. cd your-project && contextspine init
   2. Open your agent in the same folder.
-  3. Run "npx contextspine prompt onboard" and paste its output into the agent
+  3. Run "contextspine prompt onboard" and paste its output into the agent
      (first time); use "resume" afterwards.
 
 Commands:

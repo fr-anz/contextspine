@@ -13,27 +13,46 @@ takes a raw idea through screening and research into build-ready documents
 
 ## Quick start
 
+**1. Install once** (macOS, Linux, or Windows):
+
 ```bash
-cd your-project
-npx contextspine init
+npm install -g contextspine
+contextspine help
 ```
 
-Then run `npx contextspine prompt onboard` — it prints a prompt — and paste that
-text into your agent. On later sessions use `resume` instead of `onboard`.
-Every `prompt <name>` command prints text to paste into your agent.
+Run the same install command later to update.
+
+**2. Set up a project:**
+
+```bash
+cd your-project
+contextspine init
+```
+
+**3. Start your agent.** Run `contextspine prompt onboard` — it prints a prompt
+— and paste that text into your agent. On later sessions use `resume` instead
+of `onboard`. Every `prompt <name>` command prints text to paste into your agent.
 
 Copy it straight to the clipboard:
 
 ```bash
-npx contextspine prompt onboard | pbcopy                        # macOS
-npx contextspine prompt onboard | clip                          # Windows
-npx contextspine prompt onboard | xclip -selection clipboard    # Linux (or wl-copy)
+contextspine prompt onboard | pbcopy                        # macOS
+contextspine prompt onboard | clip                          # Windows
+contextspine prompt onboard | xclip -selection clipboard    # Linux (or wl-copy)
 ```
 
 Agents that can run commands can also do it themselves: tell the agent
-`Run npx contextspine prompt onboard and follow it.`
+`Run contextspine prompt onboard and follow it.`
 
-Install once globally to drop `npx`: `npm i -g contextspine`, then `contextspine init`.
+**Without installing:** put `npx` in front of any command, for example
+`npx contextspine init`. npx fetches the latest version each time, which suits a
+quick try or a machine where you can't install global packages. The rest of this
+guide writes commands without `npx`.
+
+If `contextspine` is "not found" after a global install, open a new terminal.
+If it is still missing, the folder printed by `npm prefix -g` (plus `/bin` on
+macOS and Linux) is not on your PATH; installing Node with a version manager
+such as nvm or fnm avoids this.
 
 ## How a session works
 
@@ -45,7 +64,7 @@ read" list calls for them, and saves a checkpoint after meaningful progress and
 before its final reply.
 
 You do almost nothing: start sessions, work, and let the agent checkpoint. If a
-session might end early, paste `npx contextspine prompt checkpoint` to force a save.
+session might end early, paste `contextspine prompt checkpoint` to force a save.
 
 ## Daily workflow
 
@@ -54,10 +73,10 @@ session might end early, paste `npx contextspine prompt checkpoint` to force a s
 - **Switching tools:** open the same folder in the other tool, start a new
   session, send `resume` again. All adapters share the same `.context/`.
 - **Resuming after a break:** same as starting — the checkpoint carries you.
-- **Recording a preference:** state it, then send `npx contextspine prompt preference`.
+- **Recording a preference:** state it, then send `contextspine prompt preference`.
 - **Reviewing for drift:** after a long break or a phase change, send
-  `npx contextspine prompt drift`.
-- **Chat-only tool (no file access):** run `npx contextspine export > context.md`,
+  `contextspine prompt drift`.
+- **Chat-only tool (no file access):** run `contextspine export > context.md`,
   attach that file, and ask for revised state back to save yourself.
 
 ## Start from an idea
@@ -71,22 +90,22 @@ Problem screening -> Possible solution -> Deep search -> Metaprompt -> PRD, DSD,
 After `init`, enable it in the project root:
 
 ```bash
-npx contextspine idea
+contextspine idea
 ```
 
 This creates seven documents in `docs/` (use `--docs planning/spec` for another
 location) and links them from `.context/project.md`. Then run the prompts in
 order:
 
-1. `npx contextspine prompt idea` — interviews you and screens the problem against
+1. `contextspine prompt idea` — interviews you and screens the problem against
    five tests: Real, Large enough, Significant, Relevant, Urgent. Then you pick
    one of two to four solutions. Produces `docs/IDEA.md`.
 2. Deep search, either route:
-   - `npx contextspine prompt research` — the agent searches the web itself.
-   - `npx contextspine prompt research-brief`, paste the brief into ChatGPT deep
+   - `contextspine prompt research` — the agent searches the web itself.
+   - `contextspine prompt research-brief`, paste the brief into ChatGPT deep
      research, paste the answer into `docs/RESEARCH.md`, then send
-     `npx contextspine prompt research-import` to normalize it.
-3. `npx contextspine prompt propagate` — one metaprompt turns IDEA.md and
+     `contextspine prompt research-import` to normalize it.
+3. `contextspine prompt propagate` — one metaprompt turns IDEA.md and
    RESEARCH.md into the five build documents.
 
 | Document | Holds |
@@ -100,7 +119,7 @@ order:
 | `docs/BUILD.md` | Phases and milestones `M#` delivering R#, verified by T# |
 
 Requirements live once in `PRD.md` as `R1`, `R2`, ... and are cited by ID in the
-other documents. `npx contextspine check` warns about undefined IDs and requirements
+other documents. `contextspine check` warns about undefined IDs and requirements
 without a test. `state.md` names the current `BUILD` milestone, so each session
 resumes where the build left off.
 
@@ -149,10 +168,10 @@ Default: `pi,claude-kiro,codex`.
 
 ## Customizing
 
-- Edit `.context/rules.md`, then run `npx contextspine init --sync` with the same
+- Edit `.context/rules.md`, then run `contextspine init --sync` with the same
   options to regenerate the adapter sections. Reruns never overwrite your other
   files.
-- `npx contextspine profile` shows (and creates) your global profile at
+- `contextspine profile` shows (and creates) your global profile at
   `~/.contextspine/profile.md`. New projects copy it into `.context/preferences.md`.
 
 ## Command reference
@@ -178,7 +197,7 @@ secrets out of them too.
 
 ## Prompts
 
-`npx contextspine prompt <name>` prints ready-to-paste text: `resume`, `onboard`,
+`contextspine prompt <name>` prints ready-to-paste text: `resume`, `onboard`,
 `idea`, `research`, `research-brief`, `research-import`, `propagate`,
 `checkpoint`, `preference`, `drift`. The full source lives in
 [prompts.md](prompts.md).
@@ -276,10 +295,10 @@ notes into a parent summary.
 1. **Set up the project.**
    ```bash
    mkdir tutor-notes && cd tutor-notes && git init
-   npx contextspine init
-   npx contextspine idea
+   contextspine init
+   contextspine idea
    ```
-2. **Screen the problem.** She runs `npx contextspine prompt idea` and pastes
+2. **Screen the problem.** She runs `contextspine prompt idea` and pastes
    the printed prompt into her agent. The interview scores the five tests. *Real* and *Significant* pass:
    she spends about four hours a week on updates. *Large enough* is weak, so the
    agent records it as an open question for research. She picks "notes in,
@@ -296,7 +315,7 @@ notes into a parent summary.
    `PRD.md` (for example, R3: "a parent receives one summary per week"),
    `DSD.md`, `SDD.md`, `QAD.md` (T5 verifies R3), and `BUILD.md` with M1 as the
    smallest end-to-end slice: paste notes, generate one summary, email it.
-   `npx contextspine check` confirms every requirement has a test. She asks the
+   `contextspine check` confirms every requirement has a test. She asks the
    agent to use **ste** on `PRD.md` before sharing it with a tutor friend.
 6. **Build M1.** "Use tdd to build M1 from docs/BUILD.md." The agent writes T1
    first, makes it pass, and moves through the milestone's tests.
